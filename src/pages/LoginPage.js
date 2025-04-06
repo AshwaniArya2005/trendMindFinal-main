@@ -61,32 +61,36 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     
-    if (!validateForm()) return;
+    // Validate form
+    if (!validateForm()) {
+      return;
+    }
     
     setLoading(true);
+    setError('');
     
     try {
-      await loginWithEmailAndPassword(
-        formData.email, 
-        formData.password
-      );
+      // Log in user
+      const user = await loginWithEmailAndPassword(formData.email, formData.password);
       
-      // Navigate to home page after successful login
-      navigate('/');
+      // Check if user has completed preferences
+      const hasCompletedPreferences = localStorage.getItem(`preferences_completed_${user.uid}`);
+      
+      // Redirect accordingly
+      if (hasCompletedPreferences === 'true') {
+        navigate('/');
+      } else {
+        navigate('/preferences-setup');
+      }
     } catch (error) {
-      // Handle different Firebase auth errors
-      switch(error.code) {
+      // Handle errors
+      console.error(error);
+      
+      switch (error.code) {
         case 'auth/user-not-found':
         case 'auth/wrong-password':
           setError('Invalid email or password');
-          break;
-        case 'auth/invalid-email':
-          setError('Invalid email address');
-          break;
-        case 'auth/user-disabled':
-          setError('This account has been disabled');
           break;
         case 'auth/too-many-requests':
           setError('Too many unsuccessful login attempts. Please try again later');
@@ -104,8 +108,17 @@ const LoginPage = () => {
     setLoading(true);
     
     try {
-      await signInWithGoogle();
-      navigate('/');
+      const user = await signInWithGoogle();
+      
+      // Check if this is the first time (if user has completed preferences)
+      const hasCompletedPreferences = localStorage.getItem(`preferences_completed_${user.uid}`);
+      
+      // Redirect accordingly
+      if (hasCompletedPreferences === 'true') {
+        navigate('/');
+      } else {
+        navigate('/preferences-setup');
+      }
     } catch (error) {
       setError('Failed to sign in with Google. Please try again.');
       console.error(error);

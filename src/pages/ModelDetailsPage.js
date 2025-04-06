@@ -247,10 +247,11 @@ const ModelDetailsPage = () => {
                 color="primary"
                 fullWidth
                 startIcon={<DownloadIcon />}
-                component={modelDetails.huggingFaceUrl ? "a" : "button"}
-                href={modelDetails.huggingFaceUrl || "#"}
-                target={modelDetails.huggingFaceUrl ? "_blank" : ""}
-                disabled={!modelDetails.huggingFaceUrl}
+                component="a"
+                href={modelDetails.huggingFaceUrl || modelDetails.githubUrl || modelDetails.sourceUrl || "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                disabled={!modelDetails.huggingFaceUrl && !modelDetails.githubUrl && !modelDetails.sourceUrl}
               >
                 Download Model
               </Button>
@@ -371,31 +372,19 @@ const ModelDetailsPage = () => {
             {modelDetails.tags && modelDetails.tags.length > 0 && (
               <Box sx={{ mb: 3 }}>
                 <Stack direction="row" spacing={1} flexWrap="wrap">
-                  {modelDetails.tags
-                    .filter((tag, index) => {
-                      // Keep important tags - filter for meaningful AI/ML related tags
-                      const importantTags = [
-                        'transformers', 'pytorch', 'tensorflow', 'nlp', 'computer-vision',
-                        'fill-mask', 'text-generation', 'image-classification', 'object-detection',
-                        'summarization', 'translation', 'question-answering', 'rlhf', 'fine-tuning'
-                      ];
-                      
-                      // Prioritize important tags, but ensure we don't display more than 8
-                      return importantTags.includes(tag.toLowerCase()) || index < 8;
-                    })
-                    .slice(0, 8) // Limit to max 8 tags
-                    .map((tag, index) => (
-                      <Chip 
-                        key={index} 
-                        label={tag} 
-                        sx={{ 
-                          backgroundColor: '#e8f4fd', 
-                          color: '#0277bd',
-                          m: 0.5,
-                          fontWeight: 'medium'
-                        }} 
-                      />
-                    ))}
+                  {modelDetails.tags.slice(0, 8).map((tag, index) => (
+                    <Chip 
+                      key={index} 
+                      label={tag} 
+                      sx={{ 
+                        backgroundColor: '#e8f4fd', 
+                        color: '#0277bd',
+                        m: 0.5,
+                        fontWeight: 500,
+                        px: 1
+                      }} 
+                    />
+                  ))}
                 </Stack>
               </Box>
             )}
@@ -451,29 +440,42 @@ const ModelDetailsPage = () => {
                     <Typography variant="body1" color="text.secondary">
                       Usage information is not available for this model.
                     </Typography>
-                    {modelDetails.huggingFaceUrl && (
-                      <Button 
-                        variant="outlined" 
-                        color="primary"
-                        href={modelDetails.huggingFaceUrl}
-                        target="_blank"
-                        rel="noopener"
-                        sx={{ mt: 2 }}
-                      >
-                        Check documentation on Hugging Face
-                      </Button>
-                    )}
-                    {modelDetails.githubUrl && !modelDetails.huggingFaceUrl && (
-                      <Button 
-                        variant="outlined" 
-                        color="primary"
-                        href={modelDetails.githubUrl}
-                        target="_blank"
-                        rel="noopener"
-                        sx={{ mt: 2 }}
-                      >
-                        Check documentation on GitHub
-                      </Button>
+                    {(modelDetails.huggingFaceUrl || modelDetails.githubUrl || modelDetails.sourceUrl) && (
+                      <Stack spacing={2} direction="row" justifyContent="center" sx={{ mt: 2 }}>
+                        {modelDetails.huggingFaceUrl && (
+                          <Button 
+                            variant="outlined" 
+                            color="primary"
+                            href={modelDetails.huggingFaceUrl}
+                            target="_blank"
+                            rel="noopener"
+                          >
+                            Hugging Face Documentation
+                          </Button>
+                        )}
+                        {modelDetails.githubUrl && (
+                          <Button 
+                            variant="outlined" 
+                            color="primary"
+                            href={modelDetails.githubUrl}
+                            target="_blank"
+                            rel="noopener"
+                          >
+                            GitHub Repository
+                          </Button>
+                        )}
+                        {modelDetails.sourceUrl && !modelDetails.huggingFaceUrl && !modelDetails.githubUrl && (
+                          <Button 
+                            variant="outlined" 
+                            color="primary"
+                            href={modelDetails.sourceUrl}
+                            target="_blank"
+                            rel="noopener"
+                          >
+                            Source Documentation
+                          </Button>
+                        )}
+                      </Stack>
                     )}
                   </Box>
                 )}
@@ -582,72 +584,41 @@ const ModelDetailsPage = () => {
               
               <TabPanel value={tabValue} index={4}>
                 {modelDetails.relatedModels && modelDetails.relatedModels.length > 0 ? (
-                  <>
-                    <Typography variant="h6" gutterBottom>
-                      Similar Models You Might Be Interested In
-                    </Typography>
-                    <Grid container spacing={3}>
-                      {modelDetails.relatedModels.slice(0, 4).map((model, index) => (
-                        <Grid item xs={12} sm={6} key={index}>
-                          <Card 
-                            variant="outlined" 
-                            sx={{ 
-                              height: '100%',
-                              transition: 'transform 0.2s',
-                              '&:hover': {
-                                transform: 'translateY(-4px)',
-                                boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
-                              }
-                            }}
-                          >
-                            <CardContent>
-                              <Typography variant="h6" gutterBottom>
-                                {model.name}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                {model.description && model.description.length > 100 
-                                  ? `${model.description.substring(0, 100)}...` 
-                                  : model.description}
-                              </Typography>
-                              {model.tags && model.tags.length > 0 && (
-                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-                                  {model.tags.slice(0, 3).map((tag, tagIndex) => (
-                                    <Chip 
-                                      key={tagIndex} 
-                                      label={tag} 
-                                      size="small"
-                                      sx={{ backgroundColor: '#e8f4fd', color: '#0277bd' }}
-                                    />
-                                  ))}
-                                </Box>
-                              )}
-                              <Button 
-                                variant="text" 
-                                color="primary" 
-                                component={Link}
-                                to={`/model/${model.id}`}
-                              >
-                                View Model
-                              </Button>
-                            </CardContent>
-                          </Card>
-                        </Grid>
-                      ))}
-                    </Grid>
-
-                    {modelDetails.relatedModels.length > 4 && (
-                      <Box sx={{ textAlign: 'center', mt: 3 }}>
-                        <Button 
+                  <Grid container spacing={3}>
+                    {modelDetails.relatedModels.map((model, index) => (
+                      <Grid item xs={12} sm={6} key={index}>
+                        <Card 
                           variant="outlined" 
-                          color="primary"
-                          component={Link}
-                          to="/discover"
+                          sx={{ 
+                            height: '100%',
+                            transition: 'transform 0.2s',
+                            '&:hover': {
+                              transform: 'translateY(-4px)',
+                              boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+                            }
+                          }}
                         >
-                          See All Related Models
-                        </Button>
-                      </Box>
-                    )}
-                  </>
+                          <CardContent>
+                            <Typography variant="h6" gutterBottom>
+                              {model.name}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              {model.description}
+                            </Typography>
+                            <Button 
+                              variant="text" 
+                              color="primary" 
+                              sx={{ mt: 2 }} 
+                              component={Link}
+                              to={`/model/${model.id}`}
+                            >
+                              View Model
+                            </Button>
+                          </CardContent>
+                        </Card>
+                      </Grid>
+                    ))}
+                  </Grid>
                 ) : (
                   <Box textAlign="center" py={4}>
                     <Typography variant="body1" color="text.secondary" gutterBottom>

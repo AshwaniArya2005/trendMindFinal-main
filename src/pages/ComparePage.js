@@ -202,45 +202,22 @@ const ComparePage = () => {
     const modelName = model.name.toLowerCase();
     const tags = model.tags || [];
     
-    // Filter tags to match our important tags
-    const importantTags = [
-      'transformers', 'pytorch', 'tensorflow', 'nlp', 'computer-vision',
-      'fill-mask', 'text-generation', 'image-classification', 'object-detection',
-      'summarization', 'translation', 'question-answering', 'rlhf', 'fine-tuning'
-    ];
-    
-    const filteredTags = tags
-      .filter(tag => importantTags.includes(tag.toLowerCase()) || tags.indexOf(tag) < 8)
-      .slice(0, 8);
-    
     if (modelName.includes('diffusion') || modelName.includes('stable') || 
-        filteredTags.some(t => t.toLowerCase().includes('image') || t.toLowerCase().includes('diffusion') || t.toLowerCase().includes('vision'))) {
+        tags.some(t => t.toLowerCase().includes('image') || t.toLowerCase().includes('diffusion'))) {
       return {
         description: `${model.name} excels at creating images from text descriptions, making it ideal for creative design, content generation, and visualization tasks.`,
         useCases: ['Image Generation', 'Design', 'Visualization']
       };
-    } else if (modelName.includes('llama') || modelName.includes('llm') || modelName.includes('gpt') || 
-               filteredTags.some(t => t.toLowerCase().includes('llm') || t.toLowerCase().includes('language') || 
-                              t.toLowerCase().includes('text-generation') || t.toLowerCase().includes('nlp') || 
-                              t.toLowerCase().includes('translation'))) {
+    } else if (modelName.includes('llama') || modelName.includes('llm') || 
+               tags.some(t => t.toLowerCase().includes('llm') || t.toLowerCase().includes('language'))) {
       return {
         description: `${model.name} is well-suited for text generation tasks including content creation, chatbots, and creative writing applications.`,
-        useCases: ['Content Creation', 'Chatbots', 'Text Generation']
-      };
-    } else if (filteredTags.some(t => t.toLowerCase().includes('fill-mask'))) {
-      return {
-        description: `${model.name} specializes in predicting missing words within text, helping to complete sentences naturally.`,
-        useCases: ['Text Completion', 'Content Suggestion', 'Writing Assistant']
-      };
-    } else if (filteredTags.some(t => t.toLowerCase().includes('question-answering'))) {
-      return {
-        description: `${model.name} focuses on understanding and answering questions, making it powerful for knowledge retrieval and assistance.`,
-        useCases: ['Question Answering', 'Research', 'Customer Support']
+        useCases: ['Content Creation', 'Chatbots', 'Creative Writing']
       };
     } else {
       return {
         description: `${model.name} can be used for a variety of AI tasks based on its capabilities and specialization.`,
-        useCases: ['AI Applications', 'Research', 'Machine Learning']
+        useCases: ['AI Applications', 'Research', 'Development']
       };
     }
   };
@@ -493,40 +470,24 @@ const ComparePage = () => {
                       <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                         {model.name.toLowerCase().includes('diffusion') ? (
                           <>
-                            <Chip size="small" label="diffusers" sx={{ m: 0.5, backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} />
-                            <Chip size="small" label="stable-diffusion" sx={{ m: 0.5, backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} />
-                            <Chip size="small" label="text-to-image" sx={{ m: 0.5, backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} />
-                            <Chip size="small" label="computer-vision" sx={{ m: 0.5, backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} />
+                            <Chip size="small" label="diffusers" sx={{ m: 0.5 }} />
+                            <Chip size="small" label="safetensors" sx={{ m: 0.5 }} />
+                            <Chip size="small" label="stable-diffusion" sx={{ m: 0.5 }} />
+                            <Chip size="small" label="text-to-image" sx={{ m: 0.5 }} />
                           </>
                         ) : model.name.toLowerCase().includes('llama') ? (
                           <>
-                            <Chip size="small" label="transformers" sx={{ m: 0.5, backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} />
-                            <Chip size="small" label="pytorch" sx={{ m: 0.5, backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} />
-                            <Chip size="small" label="llama" sx={{ m: 0.5, backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} />
-                            <Chip size="small" label="text-generation" sx={{ m: 0.5, backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} />
+                            <Chip size="small" label="transformers" sx={{ m: 0.5 }} />
+                            <Chip size="small" label="pytorch" sx={{ m: 0.5 }} />
+                            <Chip size="small" label="safetensors" sx={{ m: 0.5 }} />
+                            <Chip size="small" label="llama" sx={{ m: 0.5 }} />
+                            <Chip size="small" label="text-generation" sx={{ m: 0.5 }} />
+                            <Chip size="small" label="facebook" sx={{ m: 0.5 }} />
                           </>
                         ) : (
-                          (model.tags || [])
-                            .filter((tag, index) => {
-                              // Keep important tags - filter for meaningful AI/ML related tags
-                              const importantTags = [
-                                'transformers', 'pytorch', 'tensorflow', 'nlp', 'computer-vision',
-                                'fill-mask', 'text-generation', 'image-classification', 'object-detection',
-                                'summarization', 'translation', 'question-answering', 'rlhf', 'fine-tuning'
-                              ];
-                              
-                              // Prioritize important tags, but ensure we don't display more than 8
-                              return importantTags.includes(tag.toLowerCase()) || index < 8;
-                            })
-                            .slice(0, 8) // Limit to max 8 tags
-                            .map((tag, idx) => (
-                              <Chip 
-                                key={idx} 
-                                size="small" 
-                                label={tag} 
-                                sx={{ m: 0.5, backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} 
-                              />
-                            )) || <Typography variant="body2">No tags available</Typography>
+                          model.tags?.map((tag, idx) => (
+                            <Chip key={idx} size="small" label={tag} sx={{ m: 0.5 }} />
+                          )) || <Typography variant="body2">No tags available</Typography>
                         )}
                       </Box>
                     </TableCell>
@@ -739,8 +700,8 @@ const ComparePage = () => {
                           <Chip 
                             key={idx}
                             label={uc}
+                            variant="outlined"
                             size="small"
-                            sx={{ backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium', m: 0.5 }}
                           />
                         ))}
                       </Box>

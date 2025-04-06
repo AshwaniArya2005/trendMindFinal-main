@@ -19,6 +19,7 @@ import {
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import DownloadIcon from '@mui/icons-material/Download';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import ModelCard from '../components/ModelCard';
@@ -34,7 +35,8 @@ const trendingModels = [
     imageUrl: '/assets/model1.png',
     compareEnabled: true,
     downloads: 245800,
-    likes: 5627
+    likes: 5627,
+    downloadUrl: 'https://download.example.com/models/gpt4-turbo'
   },
   {
     id: 2,
@@ -44,7 +46,8 @@ const trendingModels = [
     imageUrl: '/assets/model2.png',
     compareEnabled: true,
     downloads: 183500,
-    likes: 4253
+    likes: 4253,
+    downloadUrl: 'https://download.example.com/models/stable-diffusion-xl'
   },
   {
     id: 3,
@@ -54,14 +57,15 @@ const trendingModels = [
     imageUrl: '/assets/model3.png',
     compareEnabled: true,
     downloads: 137900,
-    likes: 3182
+    likes: 3182,
+    downloadUrl: 'https://download.example.com/models/whisper-large-v3'
   },
 ];
 
 // Create an array of recommended models instead of just one
 const recommendedModels = [
   {
-    id: 4,
+    id: 2,
     name: 'Claude 3 Opus',
     description: 'Anthropic\'s flagship multimodal AI assistant with exceptional reasoning abilities and comprehensive understanding of both text and images. It excels at complex problem-solving tasks requiring nuanced analysis and can effectively process and interpret visual information alongside textual content.',
     features: [
@@ -77,7 +81,8 @@ const recommendedModels = [
     imageUrl: '/assets/featured-model.png',
     compareEnabled: true,
     downloads: 192650,
-    likes: 4836
+    likes: 4836,
+    downloadUrl: 'https://download.example.com/models/claude-3-opus'
   },
   {
     id: 5,
@@ -96,7 +101,8 @@ const recommendedModels = [
     imageUrl: '/assets/recommended-model2.png',
     compareEnabled: true,
     downloads: 175430,
-    likes: 4125
+    likes: 4125,
+    downloadUrl: 'https://download.example.com/models/gemini-pro'
   },
   {
     id: 6,
@@ -115,7 +121,8 @@ const recommendedModels = [
     imageUrl: '/assets/recommended-model3.png',
     compareEnabled: true,
     downloads: 158920,
-    likes: 3875
+    likes: 3875,
+    downloadUrl: 'https://download.example.com/models/dall-e-3'
   },
   {
     id: 7,
@@ -134,7 +141,8 @@ const recommendedModels = [
     imageUrl: '/assets/recommended-model4.png',
     compareEnabled: true,
     downloads: 142670,
-    likes: 3690
+    likes: 3690,
+    downloadUrl: 'https://download.example.com/models/llama-3'
   },
   {
     id: 8,
@@ -153,7 +161,8 @@ const recommendedModels = [
     imageUrl: '/assets/recommended-model5.png',
     compareEnabled: true,
     downloads: 167340,
-    likes: 4532
+    likes: 4532,
+    downloadUrl: 'https://download.example.com/models/midjourney-v6'
   }
 ];
 
@@ -213,6 +222,15 @@ const HomePage = () => {
         message: result.message,
         severity: result.success ? 'success' : 'warning'
       });
+    }
+  };
+  
+  // Store model data in session storage before navigating to details page
+  const handleModelDetails = () => {
+    try {
+      sessionStorage.setItem(`model_${currentModel.id}`, JSON.stringify(currentModel));
+    } catch (error) {
+      console.error('Error storing model data in session storage:', error);
     }
   };
   
@@ -466,9 +484,24 @@ const HomePage = () => {
                     color="primary" 
                     component={RouterLink} 
                     to={`/model/${currentModel.id}`}
+                    onClick={handleModelDetails}
                   >
                     View More
                   </Button>
+                  
+                  {currentModel.downloadUrl && (
+                    <Button 
+                      variant="outlined" 
+                      color="primary" 
+                      startIcon={<DownloadIcon />}
+                      component="a"
+                      href={currentModel.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      Download
+                    </Button>
+                  )}
                   
                   <Button 
                     variant={inComparison ? "contained" : "outlined"}

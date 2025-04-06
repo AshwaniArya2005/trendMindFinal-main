@@ -1,4 +1,5 @@
 import { auth } from './config';
+import firebase from 'firebase/compat/app';
 
 // Email and password registration
 export const registerWithEmailAndPassword = async (email, password) => {
@@ -23,7 +24,7 @@ export const loginWithEmailAndPassword = async (email, password) => {
 // Google sign-in
 export const signInWithGoogle = async () => {
   try {
-    const provider = new auth.GoogleAuthProvider();
+    const provider = new firebase.auth.GoogleAuthProvider();
     const userCredential = await auth.signInWithPopup(provider);
     return userCredential.user;
   } catch (error) {

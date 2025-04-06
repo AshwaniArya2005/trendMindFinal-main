@@ -83,10 +83,12 @@ const RegisterPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
     setError('');
-    
-    if (!validateForm()) return;
-    
     setLoading(true);
     
     try {
@@ -101,8 +103,8 @@ const RegisterPage = () => {
         displayName: formData.fullName
       });
       
-      // Navigate to preferences page after successful registration
-      navigate('/preferences');
+      // Redirect to preferences setup after successful registration
+      navigate('/preferences-setup');
     } catch (error) {
       // Handle different Firebase auth errors
       switch(error.code) {
@@ -128,8 +130,17 @@ const RegisterPage = () => {
     setLoading(true);
     
     try {
-      await signInWithGoogle();
-      navigate('/');
+      const user = await signInWithGoogle();
+      
+      // Check if this is the first time (if user has completed preferences)
+      const hasCompletedPreferences = localStorage.getItem(`preferences_completed_${user.uid}`);
+      
+      // Redirect accordingly
+      if (hasCompletedPreferences === 'true') {
+        navigate('/');
+      } else {
+        navigate('/preferences-setup');
+      }
     } catch (error) {
       setError('Failed to sign in with Google. Please try again.');
       console.error(error);

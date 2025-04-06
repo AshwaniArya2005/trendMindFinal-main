@@ -266,6 +266,258 @@ export const models = [
       print(result["text"])
       \`\`\`
     `,
+  },
+  {
+    id: 5,
+    name: 'Gemini Pro',
+    description: 'Google\'s advanced multimodal model capable of understanding text, images, audio, and code. Gemini excels at complex reasoning tasks and provides accurate responses across a wide range of domains.',
+    longDescription: `
+      Gemini Pro is Google's advanced multimodal AI model, designed to understand and process various types of information including text, images, audio, and code.
+      
+      Key features include:
+      
+      - Strong reasoning capabilities across diverse domains
+      - Deep understanding of code in multiple programming languages
+      - Ability to process and understand images alongside text
+      - Multilingual support with strong performance across languages
+      - Balanced instruction-following with reduced hallucinations
+      - Optimized for real-world application deployment
+      
+      Gemini Pro serves as a versatile foundation model for a wide range of applications from content creation to complex problem-solving.
+    `,
+    type: 'Large Language Model',
+    tags: ['Multimodal', 'Text Generation', 'Code Generation', 'Reasoning', 'LLM'],
+    author: 'Google',
+    downloadCount: 175430,
+    likes: 4125,
+    lastUpdated: '2023-12-13',
+    license: 'Commercial (API access)',
+    imageUrl: 'https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Header_2.width-1300.format-webp.webp',
+    huggingFaceUrl: null,
+    githubUrl: null,
+    paperUrl: 'https://storage.googleapis.com/deepmind-media/gemini/gemini_1_report.pdf',
+    performance: {
+      accuracy: 90.8,
+      speed: 'Fast',
+      memoryUsage: 'Medium',
+      metrics: [
+        { name: 'MMLU', value: '83.7%' },
+        { name: 'HumanEval', value: '67.9%' },
+        { name: 'GSM8K', value: '86.5%' },
+      ],
+    },
+    usage: `
+      # Setup
+      \`\`\`python
+      from google.generativeai import configure, GenerativeModel
+      
+      # Configure the API key
+      configure(api_key="YOUR_API_KEY")
+      
+      # Initialize the model
+      model = GenerativeModel('gemini-pro')
+      
+      # Generate a response
+      response = model.generate_content("Explain the principles of quantum computing")
+      
+      print(response.text)
+      \`\`\`
+    `,
+  },
+  {
+    id: 6,
+    name: 'DALL-E 3',
+    description: 'OpenAI\'s latest text-to-image generation model with remarkable ability to create highly detailed and accurate images from complex text descriptions.',
+    longDescription: `
+      DALL-E 3 represents a significant advancement in text-to-image generation technology from OpenAI, pushing the boundaries of what's possible in AI image creation.
+      
+      Key features include:
+      
+      - Extraordinary precision in rendering details described in prompts
+      - Enhanced understanding of spatial relationships and compositions
+      - Improved handling of text within images
+      - Better interpretation of abstract and creative concepts
+      - More consistent adherence to user intentions
+      - Refined aesthetic quality across different artistic styles
+      
+      The model excels at transforming detailed textual descriptions into visually stunning and accurate images, with particular improvements in understanding complex scenes, human anatomy, and text rendering.
+    `,
+    type: 'Text-to-Image',
+    tags: ['Image Generation', 'Computer Vision', 'Generative AI', 'AI Art'],
+    author: 'OpenAI',
+    downloadCount: 158920,
+    likes: 3875,
+    lastUpdated: '2023-10-19',
+    license: 'Commercial (API access)',
+    imageUrl: 'https://images.unsplash.com/photo-1682687220945-922198770e60',
+    huggingFaceUrl: null,
+    githubUrl: null,
+    paperUrl: null,
+    performance: {
+      accuracy: null,
+      speed: 'Medium',
+      memoryUsage: 'High',
+      metrics: [
+        { name: 'Human Preference', value: '85.3%' },
+        { name: 'Prompt Alignment', value: '92.1%' },
+        { name: 'Detail Rendering', value: 'Excellent' },
+      ],
+    },
+    usage: `
+      # Setup
+      \`\`\`python
+      import openai
+      from openai import OpenAI
+      
+      # Initialize client
+      client = OpenAI(api_key="your_api_key")
+      
+      # Generate an image
+      response = client.images.generate(
+          model="dall-e-3",
+          prompt="A futuristic cityscape with flying vehicles and towering glass structures, in the style of a vibrant digital painting",
+          n=1,
+          size="1024x1024",
+          quality="standard"
+      )
+      
+      # Get image URL
+      image_url = response.data[0].url
+      print(image_url)
+      \`\`\`
+    `,
+  },
+  {
+    id: 7,
+    name: 'Llama 3',
+    description: 'Meta\'s powerful open-source large language model designed for both research and commercial applications, with improved reasoning capabilities.',
+    longDescription: `
+      Llama 3 is Meta's latest iteration of their open-source large language model family, designed to be accessible to researchers and developers while offering competitive performance.
+      
+      Key features include:
+      
+      - Open-source availability with multiple size variants
+      - Improved reasoning and factual accuracy
+      - Enhanced instruction following capabilities
+      - Strong performance on benchmark tasks
+      - Reduced hallucinations compared to previous versions
+      - Optimized for running efficiently on various hardware setups
+      
+      The model comes in several parameter sizes (8B to 70B) allowing for deployment in different contexts, from resource-constrained environments to high-performance applications requiring advanced capabilities.
+    `,
+    type: 'Large Language Model',
+    tags: ['Open Source', 'Text Generation', 'Transformers', 'LLM'],
+    author: 'Meta AI',
+    downloadCount: 142670,
+    likes: 3690,
+    lastUpdated: '2024-04-18',
+    license: 'Llama 3 Community License',
+    imageUrl: 'https://engineering.fb.com/wp-content/uploads/2023/07/Llama-2-Open-Source-App-Hero.jpg',
+    huggingFaceUrl: 'https://huggingface.co/meta-llama',
+    githubUrl: 'https://github.com/meta-llama/llama',
+    paperUrl: 'https://ai.meta.com/research/publications/llama-3-herdmodels/',
+    performance: {
+      accuracy: 88.7,
+      speed: 'Medium',
+      memoryUsage: 'Variable (size dependent)',
+      metrics: [
+        { name: 'MMLU (70B)', value: '79.5%' },
+        { name: 'HumanEval (70B)', value: '72.3%' },
+        { name: 'GSM8K (70B)', value: '83.7%' },
+      ],
+    },
+    usage: `
+      # Setup
+      \`\`\`python
+      # Using Hugging Face Transformers
+      from transformers import AutoTokenizer, AutoModelForCausalLM
+      
+      # Load model and tokenizer
+      model_id = "meta-llama/Llama-3-70b-hf"
+      tokenizer = AutoTokenizer.from_pretrained(model_id)
+      model = AutoModelForCausalLM.from_pretrained(
+          model_id,
+          device_map="auto",
+          torch_dtype="auto",
+      )
+      
+      # Generate text
+      prompt = "Explain the importance of renewable energy sources in addressing climate change."
+      inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+      
+      outputs = model.generate(
+          **inputs,
+          max_new_tokens=512,
+          temperature=0.7,
+          top_p=0.9,
+      )
+      
+      response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+      print(response)
+      \`\`\`
+    `,
+  },
+  {
+    id: 8,
+    name: 'Midjourney v6',
+    description: 'A leading text-to-image generation model known for its artistic style and exceptional quality, capable of producing highly detailed and aesthetically pleasing imagery.',
+    longDescription: `
+      Midjourney v6 represents the latest evolution of the popular text-to-image generation system known for its distinctive aesthetic quality and artistic outputs.
+      
+      Key features include:
+      
+      - Significant improvements in photorealism and detail rendering
+      - Enhanced understanding of complex prompts and user intent
+      - Superior handling of human anatomy and faces
+      - Better coherence in multi-element compositions
+      - More precise control over artistic styles and techniques
+      - Improved text rendering within generated images
+      
+      Midjourney v6 is particularly noted for its balance between photorealistic capability and artistic expression, allowing users to generate both highly realistic images and stylized creative works with equal facility.
+    `,
+    type: 'Text-to-Image',
+    tags: ['Image Generation', 'AI Art', 'Generative AI', 'Discord Bot'],
+    author: 'Midjourney',
+    downloadCount: 167340,
+    likes: 4532,
+    lastUpdated: '2023-12-21',
+    license: 'Commercial (Subscription)',
+    imageUrl: 'https://cdn.midjourney.com/e4425caf-3f8e-4340-9098-32f5cdd9aa81/0_0.png',
+    huggingFaceUrl: null,
+    githubUrl: null,
+    paperUrl: null,
+    performance: {
+      accuracy: null,
+      speed: 'Fast',
+      memoryUsage: 'High',
+      metrics: [
+        { name: 'Aesthetic Quality', value: '9.2/10' },
+        { name: 'Prompt Adherence', value: '8.9/10' },
+        { name: 'Detail Precision', value: 'Very High' },
+      ],
+    },
+    usage: `
+      # Usage (via Discord)
+      \`\`\`
+      # Midjourney is primarily accessed through Discord
+      # Basic prompt
+      /imagine prompt: A serene mountain landscape with a crystal clear lake, highly detailed cinematic lighting
+      
+      # With parameters
+      /imagine prompt: A futuristic cyberpunk city with neon lights and flying cars --ar 16:9 --v 6 --style raw
+      
+      # Style reference
+      /imagine prompt: A portrait of a woman in the style of Rembrandt --s 750
+      \`\`\`
+      
+      # Parameters:
+      # --ar: Aspect ratio (16:9, 1:1, etc.)
+      # --v: Version (6 for latest)
+      # --s: Stylize parameter (0-1000)
+      # --style: Preset styles (raw, ornate, etc.)
+      # --q: Quality parameter (determines rendering time)
+      # --c: Chaos parameter (variation level)
+    `,
   }
 ];
 

@@ -142,9 +142,14 @@ const Header = () => {
                     </MenuItem>
                   </>
                 ) : (
-                  <MenuItem onClick={handleLogout}>
-                    Logout
-                  </MenuItem>
+                  <>
+                    <MenuItem onClick={handleMenuClose} component={RouterLink} to="/profile">
+                      Profile
+                    </MenuItem>
+                    <MenuItem onClick={handleLogout}>
+                      Logout
+                    </MenuItem>
+                  </>
                 )}
               </Menu>
             </>
@@ -184,6 +189,9 @@ const Header = () => {
                         <Typography variant="body2">
                           {currentUser?.displayName || currentUser?.email}
                         </Typography>
+                      </MenuItem>
+                      <MenuItem component={RouterLink} to="/profile" onClick={handleUserMenuClose}>
+                        Profile
                       </MenuItem>
                       <MenuItem onClick={handleLogout}>Logout</MenuItem>
                     </Menu>

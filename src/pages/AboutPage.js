@@ -17,31 +17,31 @@ const teamMembers = [
     name: 'Saksham Neema',
     role: 'Team Member',
     bio: 'Focused on backend development and system architecture for TrendMind.',
-    avatar: '/assets/team1.png',
+    avatar: '/avatar/Saksham .jpg',
   },
   {
     name: 'Ashwani Kumar Arya',
     role: 'Team Member',
     bio: 'Focused on implementing and optimizing the core features of TrendMind.',
-    avatar: '/assets/team2.png',
+    avatar: '/avatar/Ashwani.jpg',
   },
   {
     name: 'Anjali Kushwaha',
     role: 'Team Member',
     bio: 'Working on the user experience and interface design of the platform.',
-    avatar: '/assets/team3.png',
+    avatar: '/avatar/Anjali.jpg',
   },
   {
     name: 'Ashika Maheshwari',
     role: 'Team Member',
     bio: 'Contributing to the development of AI comparison tools and features.',
-    avatar: '/assets/team4.png',
+    avatar: '/avatar/Aashika.jpg',
   },
   {
     name: 'Snehal Baranwal',
     role: 'Team Leader',
     bio: 'Contributing to the development and enhancement of the TrendMind platform.',
-    avatar: '/assets/team1.png',
+    avatar: '/avatar/Snehal.jpg',
   },
 ];
 
@@ -108,7 +108,7 @@ const AboutPage = () => {
           <Grid item xs={12} md={6}>
             <Box
               component="img"
-              src="/assets/about-illustration.png"
+              src="/assets/TrendMind.png"
               alt="About TrendMind illustration"
               sx={{
                 width: '100%',

@@ -19,9 +19,16 @@ import {
   FormLabel,
   RadioGroup,
   FormControlLabel,
-  Radio
+  Radio,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  IconButton,
+  Switch,
+  FormGroup
 } from '@mui/material';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 import { signOut } from '../firebase/auth';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
@@ -30,9 +37,8 @@ import TagIcon from '@mui/icons-material/LocalOffer';
 import StarIcon from '@mui/icons-material/Star';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ModelCard from '../components/ModelCard';
-import { getFavorites } from '../services/huggingFaceService';
-import { getFavoriteModels } from '../services/modelService';
 import { useTheme } from '@mui/material/styles';
+import { models } from '../data/models';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -46,6 +52,7 @@ const ProfilePage = () => {
   const [preferencesSkipped, setPreferencesSkipped] = useState(false);
   const [favoriteModels, setFavoriteModels] = useState([]);
   const [loadingFavorites, setLoadingFavorites] = useState(true);
+  const [userPreferences, setUserPreferences] = useState([]);
   const [preferences, setPreferences] = useState({
     darkMode: false,
     emailNotifications: true,
@@ -85,14 +92,50 @@ const ProfilePage = () => {
     if (activeTab === 2) {
       loadFavoriteModels();
     }
+
+    // Load user preferences
+    loadUserPreferences();
   }, [currentUser, navigate, activeTab]);
 
-  // Fetch favorite models using the Hugging Face service
+  // Load user preferences from localStorage
+  const loadUserPreferences = () => {
+    try {
+      const storedPreferences = localStorage.getItem(`user_preferences_${currentUser.uid}`);
+      if (storedPreferences) {
+        const parsedPreferences = JSON.parse(storedPreferences);
+        if (parsedPreferences.preferences && Array.isArray(parsedPreferences.preferences)) {
+          setUserPreferences(parsedPreferences.preferences);
+          setSelectedTags(parsedPreferences.preferences);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading user preferences:', error);
+    }
+  };
+
+  // Fetch favorite models from local storage
   const loadFavoriteModels = async () => {
     try {
       setLoadingFavorites(true);
-      const models = await getFavoriteModels(getFavorites(currentUser.uid));
-      setFavoriteModels(models);
+      
+      // Get favorite model IDs from localStorage
+      const favoriteIds = JSON.parse(localStorage.getItem('favoriteModels') || '[]');
+      
+      if (favoriteIds.length === 0) {
+        setFavoriteModels([]);
+        return;
+      }
+      
+      // Filter to only include favorited models
+      const favorites = models.filter(model => favoriteIds.includes(model.id));
+      
+      // Ensure each model has compareEnabled property
+      const enhancedFavorites = favorites.map(model => ({
+        ...model,
+        compareEnabled: true
+      }));
+      
+      setFavoriteModels(enhancedFavorites);
     } catch (error) {
       console.error('Error loading favorite models:', error);
       setError('Failed to load your favorite models. Please try again.');
@@ -159,6 +202,20 @@ const ProfilePage = () => {
     }
   };
 
+  // Add function to remove favorite directly from the profile page
+  const handleRemoveFavorite = (modelId) => {
+    // Update state
+    setFavoriteModels(favoriteModels.filter(model => model.id !== modelId));
+    
+    // Update localStorage
+    const favorites = JSON.parse(localStorage.getItem('favoriteModels') || '[]');
+    const index = favorites.indexOf(modelId);
+    if (index > -1) {
+      favorites.splice(index, 1);
+      localStorage.setItem('favoriteModels', JSON.stringify(favorites));
+    }
+  };
+
   // Group tags by category
   const tagsByCategory = availableTags.reduce((acc, tag) => {
     if (!acc[tag.category]) {
@@ -167,6 +224,11 @@ const ProfilePage = () => {
     acc[tag.category].push(tag);
     return acc;
   }, {});
+
+  // Navigate to preferences setup page
+  const handleEditPreferences = () => {
+    navigate('/preferences-setup');
+  };
 
   if (loading) {
     return (
@@ -330,71 +392,121 @@ const ProfilePage = () => {
           </TabPanel>
           
           <TabPanel value={activeTab} index={1}>
-            {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {error}
-              </Alert>
-            )}
-            
-            {success && (
-              <Alert severity="success" sx={{ mb: 3 }}>
-                Preferences saved successfully!
-              </Alert>
-            )}
-            
             <Box sx={{ mb: 4 }}>
-              {Object.entries(tagsByCategory).map(([category, categoryTags]) => (
-                <Box key={category} sx={{ mb: 3 }}>
-                  <Typography 
-                    variant="h6" 
-                    color="primary" 
-                    fontWeight={500} 
-                    sx={{ mb: 1.5 }}
+              <Typography variant="h6" gutterBottom>
+                Your AI Interests
+              </Typography>
+              <Typography variant="body2" color="text.secondary" paragraph>
+                These preferences are used to personalize your experience and recommendations.
+              </Typography>
+              
+              {userPreferences.length > 0 ? (
+                <>
+                  <Box sx={{ mb: 3, mt: 3 }}>
+                    <Typography variant="subtitle1" gutterBottom>
+                      Selected Topics:
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                      {userPreferences.map(tagId => {
+                        const tag = availableTags.find(t => t.id === tagId);
+                        return tag ? (
+                          <Chip 
+                            key={tagId} 
+                            label={tag.name} 
+                            color="primary"
+                            sx={{ 
+                              m: 0.5,
+                              fontWeight: 500
+                            }} 
+                          />
+                        ) : null;
+                      })}
+                    </Box>
+                  </Box>
+                  
+                  <Button 
+                    variant="outlined" 
+                    color="primary"
+                    onClick={handleEditPreferences}
+                    startIcon={<TagIcon />}
+                    sx={{ mt: 2 }}
                   >
-                    {category}
+                    Edit Preferences
+                  </Button>
+                </>
+              ) : (
+                <Box sx={{ mt: 3, textAlign: 'center', py: 4 }}>
+                  <Typography variant="body1" color="text.secondary" gutterBottom>
+                    You haven't set any preferences yet
                   </Typography>
-                  <Grid container spacing={1}>
-                    {categoryTags.map(tag => (
-                      <Grid item key={tag.id}>
-                        <Chip
-                          label={tag.name}
-                          onClick={() => handleTagSelect(tag.id)}
-                          color={selectedTags.includes(tag.id) ? "primary" : "default"}
-                          variant={selectedTags.includes(tag.id) ? "filled" : "outlined"}
-                          sx={{ 
-                            m: 0.5, 
-                            fontWeight: 500,
-                            '&.MuiChip-colorPrimary': {
-                              backgroundColor: selectedTags.includes(tag.id) ? 'primary.main' : 'transparent',
-                              color: selectedTags.includes(tag.id) ? 'white' : 'text.primary',
-                            },
-                            '&:hover': {
-                              backgroundColor: selectedTags.includes(tag.id) 
-                                ? 'primary.dark' 
-                                : 'rgba(0,0,0,0.08)',
-                            },
-                            transition: 'all 0.2s ease-in-out',
-                          }}
-                        />
-                      </Grid>
-                    ))}
-                  </Grid>
+                  <Button 
+                    variant="contained" 
+                    color="primary"
+                    onClick={handleEditPreferences}
+                    sx={{ mt: 2 }}
+                  >
+                    Set Preferences
+                  </Button>
                 </Box>
-              ))}
+              )}
             </Box>
             
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="body2" color="text.secondary">
-                {selectedTags.length} topics selected {selectedTags.length < 3 && '(minimum 3)'}
-              </Typography>
+            <Divider sx={{ my: 4 }} />
+            
+            <Typography variant="h6" gutterBottom>
+              Application Settings
+            </Typography>
+            
+            <Box sx={{ mt: 2 }}>
+              <FormControl component="fieldset" sx={{ width: '100%' }}>
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={preferences.darkMode}
+                        onChange={handlePreferenceChange}
+                        name="darkMode"
+                      />
+                    }
+                    label="Dark Mode"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={preferences.emailNotifications}
+                        onChange={handlePreferenceChange}
+                        name="emailNotifications"
+                      />
+                    }
+                    label="Email Notifications"
+                  />
+                </FormGroup>
+              </FormControl>
+            </Box>
+            
+            <Box sx={{ mt: 3 }}>
+              <FormControl component="fieldset" sx={{ width: '100%' }}>
+                <FormLabel component="legend">Default Model Category</FormLabel>
+                <RadioGroup
+                  name="modelCategory"
+                  value={preferences.modelCategory}
+                  onChange={handlePreferenceChange}
+                >
+                  <FormControlLabel value="all" control={<Radio />} label="All Models" />
+                  <FormControlLabel value="text" control={<Radio />} label="Text Models" />
+                  <FormControlLabel value="image" control={<Radio />} label="Image Models" />
+                  <FormControlLabel value="audio" control={<Radio />} label="Audio Models" />
+                </RadioGroup>
+              </FormControl>
+            </Box>
+            
+            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end' }}>
               <Button
                 variant="contained"
                 color="primary"
-                disabled={saving || selectedTags.length < 3}
-                onClick={savePreferences}
-                sx={{ 
-                  py: 1.2, 
-                  px: 4,
+                disabled={saving}
+                sx={{
+                  py: 1.2,
                   backgroundColor: theme => theme.palette.primary.main,
                   '&:hover': {
                     backgroundColor: theme => theme.palette.primary.dark,
@@ -413,13 +525,21 @@ const ProfilePage = () => {
                 <CircularProgress />
               </Box>
             ) : favoriteModels.length > 0 ? (
-              <Grid container spacing={3}>
-                {favoriteModels.map(model => (
-                  <Grid item xs={12} sm={6} key={model.id}>
-                    <ModelCard model={model} />
-                  </Grid>
-                ))}
-              </Grid>
+              <>
+                <Box sx={{ mb: 3, display: 'flex', alignItems: 'center' }}>
+                  <StarIcon color="warning" sx={{ mr: 1 }} />
+                  <Typography variant="h6">
+                    Your Favorite Models ({favoriteModels.length})
+                  </Typography>
+                </Box>
+                <Grid container spacing={3}>
+                  {favoriteModels.map(model => (
+                    <Grid item xs={12} sm={6} key={model.id}>
+                      <ModelCard model={model} />
+                    </Grid>
+                  ))}
+                </Grid>
+              </>
             ) : (
               <Box sx={{ py: 4, textAlign: 'center' }}>
                 <Typography variant="h6" color="text.secondary" gutterBottom>

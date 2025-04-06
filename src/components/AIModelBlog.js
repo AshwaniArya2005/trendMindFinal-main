@@ -29,17 +29,6 @@ const generateBlogContent = (model) => {
     lastUpdated = '',
   } = model;
 
-  // Filter to keep only meaningful tags, limited to 8
-  const importantTags = [
-    'transformers', 'pytorch', 'tensorflow', 'nlp', 'computer-vision',
-    'fill-mask', 'text-generation', 'image-classification', 'object-detection',
-    'summarization', 'translation', 'question-answering', 'rlhf', 'fine-tuning'
-  ];
-  
-  const filteredTags = tags
-    .filter(tag => importantTags.includes(tag.toLowerCase()) || tags.indexOf(tag) < 8)
-    .slice(0, 8);
-  
   // Format date
   const blogDate = lastUpdated 
     ? new Date(lastUpdated).toLocaleDateString('en-US', { 
@@ -64,20 +53,22 @@ const generateBlogContent = (model) => {
   if (!technicalOverview) {
     technicalOverview = `${name} represents a significant advancement in ${type ? type.toLowerCase() : 'artificial intelligence'} technology. `;
     
-    // Add details based on filtered tags
-    if (filteredTags.some(tag => tag.toLowerCase().includes('vision') || tag.toLowerCase().includes('image'))) {
+    // Add details based on tags
+    if (tags.some(tag => tag.toLowerCase().includes('vision') || tag.toLowerCase().includes('image'))) {
       technicalOverview += "This model excels in computer vision tasks, allowing it to process and understand visual data with remarkable accuracy. ";
     }
     
-    if (filteredTags.some(tag => tag.toLowerCase().includes('nlp') || tag.toLowerCase().includes('text'))) {
+    if (tags.some(tag => tag.toLowerCase().includes('nlp') || tag.toLowerCase().includes('text'))) {
       technicalOverview += "Natural language processing capabilities enable this model to understand and generate human language with nuance and contextual awareness. ";
     }
     
-    if (filteredTags.some(tag => tag.toLowerCase().includes('audio'))) {
+    if (tags.some(tag => tag.toLowerCase().includes('audio'))) {
       technicalOverview += "The model demonstrates impressive audio processing abilities, making it suitable for speech recognition and sound analysis tasks. ";
     }
     
-    technicalOverview += `Users can expect state-of-the-art performance across a range of ${filteredTags.length > 0 ? filteredTags.join(', ').toLowerCase() : 'AI'} applications.`;
+    // Get the most relevant tags, limited to 8
+    const relevantTags = tags.slice(0, 8).join(', ').toLowerCase();
+    technicalOverview += `Users can expect state-of-the-art performance across a range of ${relevantTags || 'AI'} applications.`;
   }
   
   // Performance insights
@@ -112,25 +103,27 @@ const generateBlogContent = (model) => {
   
   // If no performance data, provide a generic statement
   if (!performanceInsights) {
-    performanceInsights = `${name} offers competitive performance in its category, though specific metrics are not available. Users can expect reliable results for typical ${filteredTags.length > 0 ? filteredTags.join(', ').toLowerCase() : 'AI'} tasks.`;
+    // Get at most 3 primary tags for clarity
+    const primaryTags = tags.slice(0, 3).join(', ').toLowerCase();
+    performanceInsights = `${name} offers competitive performance in its category, though specific metrics are not available. Users can expect reliable results for typical ${primaryTags || 'AI'} tasks.`;
   }
   
-  // Use cases - focus on the filtered tags
+  // Use cases
   let useCases = "This model can be applied across various domains, including: ";
   
-  if (filteredTags.some(tag => tag.toLowerCase().includes('vision') || tag.toLowerCase().includes('image'))) {
+  if (tags.some(tag => tag.toLowerCase().includes('vision') || tag.toLowerCase().includes('image'))) {
     useCases += "image recognition, object detection, visual content generation, ";
   }
   
-  if (filteredTags.some(tag => tag.toLowerCase().includes('nlp') || tag.toLowerCase().includes('text'))) {
+  if (tags.some(tag => tag.toLowerCase().includes('nlp') || tag.toLowerCase().includes('text'))) {
     useCases += "content creation, chatbots, text summarization, language translation, ";
   }
   
-  if (filteredTags.some(tag => tag.toLowerCase().includes('audio'))) {
+  if (tags.some(tag => tag.toLowerCase().includes('audio'))) {
     useCases += "speech recognition, audio transcription, sound classification, ";
   }
   
-  useCases += "and many other innovative applications. ";
+  useCases += "and other innovative applications. ";
   useCases += `Organizations across industries can leverage ${name} to enhance their AI capabilities and create more intelligent, responsive systems.`;
   
   // Conclusion
@@ -139,8 +132,11 @@ const generateBlogContent = (model) => {
   }, ${
     performance && performance.speed ? performance.speed.toLowerCase() + ' processing' : 'efficient operation'
   }, and versatility makes it suitable for a wide range of applications. Whether you're working on ${
-    filteredTags.length > 0 ? filteredTags.slice(0, 3).join(', ').toLowerCase() : 'AI projects'
+    tags.length > 0 ? tags.slice(0, 3).join(', ').toLowerCase() : 'AI projects'
   } or other innovative solutions, this model offers the capabilities needed to drive meaningful results.`;
+
+  // Filter to max 8 most important tags
+  const importantTags = tags.slice(0, 8);
 
   return {
     title,
@@ -159,7 +155,7 @@ const generateBlogContent = (model) => {
       { type: 'heading', text: 'Conclusion' },
       { type: 'paragraph', text: conclusion }
     ],
-    tags: filteredTags
+    tags: importantTags
   };
 };
 
@@ -211,27 +207,14 @@ const AIModelBlog = ({ model }) => {
         </Box>
         
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 3 }}>
-          {blogContent.tags
-            .filter((tag, index) => {
-              // Keep important tags - filter for meaningful AI/ML related tags
-              const importantTags = [
-                'transformers', 'pytorch', 'tensorflow', 'nlp', 'computer-vision',
-                'fill-mask', 'text-generation', 'image-classification', 'object-detection',
-                'summarization', 'translation', 'question-answering', 'rlhf', 'fine-tuning'
-              ];
-              
-              // Prioritize important tags, but ensure we don't display more than 8
-              return importantTags.includes(tag.toLowerCase()) || index < 8;
-            })
-            .slice(0, 8) // Limit to max 8 tags
-            .map((tag, index) => (
-              <Chip 
-                key={index} 
-                label={tag} 
-                size="small"
-                sx={{ backgroundColor: '#e8f4fd', color: '#0277bd', fontWeight: 'medium' }} 
-              />
-            ))}
+          {blogContent.tags.map((tag, index) => (
+            <Chip 
+              key={index} 
+              label={tag} 
+              size="small"
+              sx={{ backgroundColor: '#e8f4fd', color: '#0277bd' }} 
+            />
+          ))}
         </Box>
         
         <Divider sx={{ my: 3 }} />
