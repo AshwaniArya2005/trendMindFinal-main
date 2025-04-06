@@ -333,7 +333,7 @@ const HomePage = () => {
             <Grid item xs={12} md={6}>
               <Box
                 component="img"
-                src="/assets/HomePage.png"
+                src="/assets/HomePage.jpg"
                 alt="AI technology illustration"
                 sx={{
                   width: '100%',
