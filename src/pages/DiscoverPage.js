@@ -258,14 +258,29 @@ const DiscoverPage = () => {
     setError(null);
     
     try {
-      // Fetch from Hugging Face - get more models for better chances of good images
-      const response = await fetch('https://huggingface.co/api/models?sort=downloads&direction=-1&limit=40');
+      // Try to fetch from Hugging Face with timeout
+      let controller;
+      let hfData;
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch models from Hugging Face');
+      try {
+        controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        const response = await fetch('https://huggingface.co/api/models?sort=downloads&direction=-1&limit=40', {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch models from Hugging Face');
+        }
+        
+        hfData = await response.json();
+      } catch (fetchError) {
+        console.warn(`API fetch failed: ${fetchError.message}`);
+        throw new Error(`API fetch failed: ${fetchError.message}`);
       }
-      
-      const hfData = await response.json();
       
       let enhancedModels = Array(hfData.length).fill({});
       
@@ -416,7 +431,7 @@ const DiscoverPage = () => {
                   source: model.modelId.includes('/') ? model.modelId.split('/')[0] : 'Unknown',
                   sourceUrl: `https://huggingface.co/${model.modelId}`,
                   demoUrl: `https://huggingface.co/${model.modelId}?inference=1`,
-                  downloadUrl: `https://huggingface.co/${model.modelId}/tree/main`,
+                  downloadUrl: cardData?.pipeline_tag ? `https://huggingface.co/api/models/${model.modelId}` : null,
                   apiUrl: cardData?.pipeline_tag ? `https://huggingface.co/api/models/${model.modelId}` : null,
                   downloads: model.downloads || 0,
                   likes: model.likes || 0,
@@ -455,9 +470,19 @@ const DiscoverPage = () => {
       setFilteredModels(enhancedModels);
     } catch (error) {
       console.error('Error fetching models:', error);
-      setError('Failed to fetch models. Please try again later.');
-      setModels([]);
-      setFilteredModels([]);
+      // Use the mockModels array as a fallback when the API fails
+      console.log('Using mock models as fallback due to API error');
+      setError('Unable to fetch models from API. Using local sample models instead.');
+      
+      // Add downloadUrl to mock models if not already present
+      const enhancedMockModels = mockModels.map(model => ({
+        ...model,
+        downloadUrl: model.downloadUrl || model.sourceUrl,
+        compareEnabled: true
+      }));
+      
+      setModels(enhancedMockModels);
+      setFilteredModels(enhancedMockModels);
     } finally {
       setLoading(false);
     }
@@ -471,7 +496,16 @@ const DiscoverPage = () => {
   // Handle refresh button click
   const handleRefresh = () => {
     setNotification('Refreshing models...');
-    fetchModels();
+    try {
+      fetchModels()
+        .catch(error => {
+          console.error("Error during refresh:", error);
+          setNotification('Failed to refresh models. Using local data instead.');
+        });
+    } catch (error) {
+      console.error("Error during refresh:", error);
+      setNotification('Failed to refresh models. Using local data instead.');
+    }
   };
 
   // Handle notification close

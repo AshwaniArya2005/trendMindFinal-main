@@ -94,11 +94,11 @@ const ComparePage = () => {
   comparisonModels.forEach(model => {
     const modelName = model.name.toLowerCase();
     const isLanguageModel = modelName.includes('llama') || 
-                            modelName.includes('gpt') || 
-                            modelName.includes('bert') ||
-                            (model.tags && model.tags.some(t => 
-                              t.toLowerCase().includes('llm') || 
-                              t.toLowerCase().includes('text')));
+                          modelName.includes('gpt') || 
+                          modelName.includes('bert') ||
+                          (model.tags && model.tags.some(t => 
+                            t.toLowerCase().includes('llm') || 
+                            t.toLowerCase().includes('text')));
     
     const isImageModel = modelName.includes('diffusion') || 
                          modelName.includes('stable') || 
@@ -106,95 +106,48 @@ const ComparePage = () => {
                             t.toLowerCase().includes('image') || 
                             t.toLowerCase().includes('diffusion')));
                             
-    // Inference Speed
-    if (isLanguageModel) {
-      performanceMetrics.inference_speed.values[model.id] = { 
-        value: 130, 
-        unit: 'ms/token', 
-        status: 'bad' 
-      };
-    } else if (isImageModel) {
-      performanceMetrics.inference_speed.values[model.id] = { 
-        value: 50, 
-        unit: 'ms/token', 
-        status: 'good' 
-      };
-    }
+    // Only set one value per metric per model
+    // Inference Speed - set a single value per model
+    performanceMetrics.inference_speed.values[model.id] = { 
+      value: isLanguageModel ? 130 : 50, 
+      unit: 'ms/token', 
+      status: isLanguageModel ? 'bad' : 'good' 
+    };
     
     // Model Size
-    if (isLanguageModel) {
-      performanceMetrics.model_size.values[model.id] = { 
-        value: 14, 
-        unit: 'GB', 
-        status: 'neutral' 
-      };
-    } else if (isImageModel) {
-      performanceMetrics.model_size.values[model.id] = { 
-        value: 1.0, 
-        unit: 'GB', 
-        status: 'good' 
-      };
-    }
+    performanceMetrics.model_size.values[model.id] = { 
+      value: isLanguageModel ? 14 : 1.0, 
+      unit: 'GB', 
+      status: isLanguageModel ? 'neutral' : 'good' 
+    };
     
     // Memory Usage
-    if (isLanguageModel) {
-      performanceMetrics.memory_usage.values[model.id] = { 
-        value: 30.8, 
-        unit: 'GB', 
-        status: 'bad' 
-      };
-    } else if (isImageModel) {
-      performanceMetrics.memory_usage.values[model.id] = { 
-        value: 2.2, 
-        unit: 'GB', 
-        status: 'good' 
-      };
-    }
+    performanceMetrics.memory_usage.values[model.id] = { 
+      value: isLanguageModel ? 30.8 : 2.2, 
+      unit: 'GB', 
+      status: isLanguageModel ? 'bad' : 'good' 
+    };
     
     // MMLU Score (only for language models)
-    if (isLanguageModel) {
-      performanceMetrics.mmlu_score.values[model.id] = { 
-        value: 75.0, 
-        unit: '%', 
-        status: 'good' 
-      };
-    } else {
-      performanceMetrics.mmlu_score.values[model.id] = { 
-        value: 'N/A', 
-        unit: '', 
-        status: 'neutral' 
-      };
-    }
+    performanceMetrics.mmlu_score.values[model.id] = { 
+      value: isLanguageModel ? 75.0 : 'N/A', 
+      unit: isLanguageModel ? '%' : '', 
+      status: isLanguageModel ? 'good' : 'neutral' 
+    };
     
     // HELM Score (only for language models)
-    if (isLanguageModel) {
-      performanceMetrics.helm_score.values[model.id] = { 
-        value: 8.5, 
-        unit: '', 
-        status: 'good' 
-      };
-    } else {
-      performanceMetrics.helm_score.values[model.id] = { 
-        value: 'N/A', 
-        unit: '', 
-        status: 'neutral' 
-      };
-    }
+    performanceMetrics.helm_score.values[model.id] = { 
+      value: isLanguageModel ? 8.5 : 'N/A', 
+      unit: '', 
+      status: isLanguageModel ? 'good' : 'neutral' 
+    };
     
     // ImageNet Accuracy (only for image models)
-    if (isImageModel) {
-      performanceMetrics.imagenet_accuracy.values[model.id] = { 
-        value: 'N/A', 
-        unit: '%', 
-        status: 'neutral' 
-      };
-    } else {
-      performanceMetrics.imagenet_accuracy.values[model.id] = { 
-        value: 'N/A', 
-        unit: '', 
-        status: 'neutral' 
-      };
-    }
+    performanceMetrics.imagenet_accuracy.values[model.id] = { 
+      value: isImageModel ? 92.5 : 'N/A', 
+      unit: isImageModel ? '%' : '', 
+      status: isImageModel ? 'good' : 'neutral' 
+    };
   });
   
   // Generate mock use cases based on model types
@@ -353,22 +306,7 @@ const ComparePage = () => {
                 </IconButton>
                 
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2 }}>
-                  <Box sx={{ width: 140, height: 140, mb: 2 }}>
-                    {model.imageUrl ? (
-                      <img 
-                        src={model.imageUrl} 
-                        alt={model.name}
-                        style={{ 
-                          width: '100%', 
-                          height: '100%', 
-                          objectFit: 'contain' 
-                        }}
-                      />
-                    ) : (
-                      <ModelImagePlaceholder model={model} size="medium" />
-                    )}
-                  </Box>
-                  
+                
                   <Typography variant="h5" component="h2" align="center" gutterBottom>
                     {model.name}
                   </Typography>
@@ -517,77 +455,97 @@ const ComparePage = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 'medium' }}>Inference Speed</TableCell>
+                {/* Inference Speed */}
+                <TableRow hover>
+                  <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>Inference Speed</TableCell>
                   {comparisonModels.map((model) => {
-                    const value = model.name.toLowerCase().includes('llama') ? '130 ms/token' : '50 ms/token';
-                    const status = model.name.toLowerCase().includes('llama') ? 'bad' : 'good';
+                    const metricData = performanceMetrics.inference_speed.values[model.id];
                     return (
                       <TableCell key={`${model.id}-speed`} sx={{ display: 'flex', alignItems: 'center' }}>
-                        {value} <Box sx={{ ml: 1 }}><StatusIndicator status={status} /></Box>
+                        {metricData ? `${metricData.value} ${metricData.unit}` : 'N/A'} 
+                        <Box sx={{ ml: 1 }}>
+                          <StatusIndicator status={metricData?.status || 'neutral'} />
+                        </Box>
                       </TableCell>
                     );
                   })}
                 </TableRow>
                 
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 'medium' }}>Model Size</TableCell>
+                {/* Model Size */}
+                <TableRow hover>
+                  <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>Model Size</TableCell>
                   {comparisonModels.map((model) => {
-                    const value = model.name.toLowerCase().includes('llama') ? '14 GB' : '1.0 GB';
+                    const metricData = performanceMetrics.model_size.values[model.id];
                     return (
                       <TableCell key={`${model.id}-size`}>
-                        {value}
+                        {metricData ? `${metricData.value} ${metricData.unit}` : 'N/A'}
                       </TableCell>
                     );
                   })}
                 </TableRow>
                 
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 'medium' }}>Memory Usage</TableCell>
+                {/* Memory Usage */}
+                <TableRow hover>
+                  <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>Memory Usage</TableCell>
                   {comparisonModels.map((model) => {
-                    const value = model.name.toLowerCase().includes('llama') ? '30.8 GB' : '2.2 GB';
-                    const status = model.name.toLowerCase().includes('llama') ? 'bad' : 'good';
+                    const metricData = performanceMetrics.memory_usage.values[model.id];
                     return (
                       <TableCell key={`${model.id}-memory`} sx={{ display: 'flex', alignItems: 'center' }}>
-                        {value} <Box sx={{ ml: 1 }}><StatusIndicator status={status} /></Box>
+                        {metricData ? `${metricData.value} ${metricData.unit}` : 'N/A'} 
+                        <Box sx={{ ml: 1 }}>
+                          <StatusIndicator status={metricData?.status || 'neutral'} />
+                        </Box>
                       </TableCell>
                     );
                   })}
                 </TableRow>
                 
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 'medium' }}>MMLU Score</TableCell>
+                {/* MMLU Score - LLM specific metric */}
+                <TableRow hover>
+                  <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>MMLU Score</TableCell>
                   {comparisonModels.map((model) => {
-                    const value = model.name.toLowerCase().includes('llama') ? '75.0%' : 'N/A';
-                    const status = model.name.toLowerCase().includes('llama') ? 'good' : null;
+                    const metricData = performanceMetrics.mmlu_score.values[model.id];
                     return (
                       <TableCell key={`${model.id}-mmlu`} sx={{ display: 'flex', alignItems: 'center' }}>
-                        {value} {status && <Box sx={{ ml: 1 }}><StatusIndicator status={status} /></Box>}
+                        {metricData?.value === 'N/A' ? 'N/A' : `${metricData?.value}${metricData?.unit}`} 
+                        <Box sx={{ ml: 1 }}>
+                          <StatusIndicator status={metricData?.status || 'neutral'} />
+                        </Box>
                       </TableCell>
                     );
                   })}
                 </TableRow>
                 
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 'medium' }}>HELM Score</TableCell>
+                {/* HELM Score - LLM specific metric */}
+                <TableRow hover>
+                  <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>HELM Score</TableCell>
                   {comparisonModels.map((model) => {
-                    const value = model.name.toLowerCase().includes('llama') ? '8.5' : 'N/A';
-                    const status = model.name.toLowerCase().includes('llama') ? 'good' : null;
+                    const metricData = performanceMetrics.helm_score.values[model.id];
                     return (
                       <TableCell key={`${model.id}-helm`} sx={{ display: 'flex', alignItems: 'center' }}>
-                        {value} {status && <Box sx={{ ml: 1 }}><StatusIndicator status={status} /></Box>}
+                        {metricData?.value} 
+                        <Box sx={{ ml: 1 }}>
+                          <StatusIndicator status={metricData?.status || 'neutral'} />
+                        </Box>
                       </TableCell>
                     );
                   })}
                 </TableRow>
                 
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 'medium' }}>ImageNet Accuracy</TableCell>
-                  {comparisonModels.map((model) => (
-                    <TableCell key={`${model.id}-imagenet`}>
-                      N/A <Box sx={{ display: 'inline-block', ml: 1 }}><StatusIndicator status="neutral" /></Box>
-                    </TableCell>
-                  ))}
+                {/* ImageNet Accuracy - Computer Vision specific metric */}
+                <TableRow hover>
+                  <TableCell component="th" scope="row" sx={{ fontWeight: 'medium' }}>ImageNet Accuracy</TableCell>
+                  {comparisonModels.map((model) => {
+                    const metricData = performanceMetrics.imagenet_accuracy.values[model.id];
+                    return (
+                      <TableCell key={`${model.id}-imagenet`} sx={{ display: 'flex', alignItems: 'center' }}>
+                        {metricData?.value} 
+                        <Box sx={{ ml: 1 }}>
+                          <StatusIndicator status={metricData?.status || 'neutral'} />
+                        </Box>
+                      </TableCell>
+                    );
+                  })}
                 </TableRow>
               </TableBody>
             </Table>

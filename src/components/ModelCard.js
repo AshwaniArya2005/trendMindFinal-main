@@ -22,8 +22,7 @@ import {
   Snackbar,
   Alert
 } from '@mui/material';
-import StarIcon from '@mui/icons-material/Star';
-import StarBorderIcon from '@mui/icons-material/StarBorder';
+import InfoIcon from '@mui/icons-material/Info';
 import StorageIcon from '@mui/icons-material/Storage';
 import CloudDownloadIcon from '@mui/icons-material/CloudDownload';
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -43,11 +42,15 @@ import { useComparison } from '../contexts/ComparisonContext';
 const StyledCard = styled(Card)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  height: '100%',
-  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+  height: 'auto',
+  padding: '16px',
+  boxShadow: '0 4px 8px rgba(25, 118, 210, 0.15)',
+  border: '1px solid #1976d2',
+  borderRadius: '8px',
+  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
   '&:hover': {
-    transform: 'translateY(-4px)',
-    boxShadow: '0 12px 20px rgba(0,0,0,0.1)',
+    transform: 'translateY(-3px)',
+    boxShadow: '0 8px 16px rgba(25, 118, 210, 0.25)',
   },
 }));
 
@@ -55,12 +58,15 @@ const StyledCardMediaContainer = styled(Box)(({ theme }) => ({
   position: 'relative',
   height: 200,
   width: '100%',
-  backgroundColor: '#f5f8fa',
-  borderBottom: '1px solid #eaeef3',
+  backgroundColor: '#f8fafc',
+  border: '2px solid #1976d2',
+  borderRadius: '4px',
   overflow: 'hidden',
   display: 'flex',
   alignItems: 'center',
-  justifyContent: 'center'
+  justifyContent: 'center',
+  flexDirection: 'column',
+  padding: '16px'
 }));
 
 const StyledCardMedia = styled('img')(({ theme }) => ({
@@ -88,7 +94,7 @@ const ImagePlaceholder = styled(Box)(({ theme }) => ({
   color: theme.palette.text.secondary
 }));
 
-const StarIconButton = styled(IconButton)(({ theme, favorite }) => ({
+const InfoIconButton = styled(IconButton)(({ theme }) => ({
   position: 'absolute',
   top: 8,
   right: 8,
@@ -96,7 +102,6 @@ const StarIconButton = styled(IconButton)(({ theme, favorite }) => ({
   '&:hover': {
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
   },
-  color: favorite ? theme.palette.warning.main : 'inherit',
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -319,57 +324,12 @@ const ModelCard = ({ model }) => {
   const [imgLoading, setImgLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' });
-  const [favorite, setFavorite] = useState(false);
   
   // Get comparison context
   const { addModelToComparison, removeModelFromComparison, isModelInComparison } = useComparison();
   
   // Check if model is in comparison
   const inComparison = isModelInComparison(model.id);
-  
-  useEffect(() => {
-    // Check if model is favorited in localStorage
-    const favorites = JSON.parse(localStorage.getItem('favoriteModels') || '[]');
-    setFavorite(favorites.includes(model.id));
-  }, [model.id]);
-  
-  // Handle favorite toggle
-  const handleFavoriteToggle = (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    
-    // Toggle favorite state
-    const newFavoriteState = !favorite;
-    setFavorite(newFavoriteState);
-    
-    // Update localStorage
-    const favorites = JSON.parse(localStorage.getItem('favoriteModels') || '[]');
-    
-    if (newFavoriteState) {
-      // Add to favorites if not already present
-      if (!favorites.includes(model.id)) {
-        favorites.push(model.id);
-        setNotification({
-          open: true,
-          message: 'Added to favorites',
-          severity: 'success'
-        });
-      }
-    } else {
-      // Remove from favorites
-      const index = favorites.indexOf(model.id);
-      if (index > -1) {
-        favorites.splice(index, 1);
-        setNotification({
-          open: true,
-          message: 'Removed from favorites',
-          severity: 'info'
-        });
-      }
-    }
-    
-    localStorage.setItem('favoriteModels', JSON.stringify(favorites));
-  };
   
   // Format numbers with k suffix
   const formatNumber = (num) => {
@@ -494,243 +454,125 @@ const ModelCard = ({ model }) => {
   };
   
   return (
-    <>
-      <StyledCard>
-        <Box sx={{ position: 'relative' }}>
-          {model.loading && (
-            <LinearProgress 
-              sx={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                zIndex: 1,
-                height: 3
-              }} 
-            />
-          )}
-          
-          <StyledCardMediaContainer 
-            onClick={!model.loading ? handleOpenModal : undefined}
-            sx={{ cursor: !model.loading ? 'pointer' : 'default' }}
-          >
-            {/* Show enhanced placeholder for error cases or while loading */}
-            {(imgError || imgLoading) && (
-              <Box sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }}>
-                <ModelImagePlaceholder 
-                  model={model} 
-                  loading={imgLoading && !imgError} 
-                  size="medium" 
-                />
-              </Box>
-            )}
-            
-            {/* Actual image - hidden while loading or on error */}
-            <StyledCardMedia
-              src={getImageUrl()}
-              alt={model.name}
-              onError={() => setImgError(true)}
-              sx={{
-                opacity: (model.loading || imgLoading) ? 0.6 : 1,
-                transition: 'opacity 0.3s ease',
-                filter: (model.loading || imgLoading) ? 'brightness(0.8)' : 'none',
-                display: imgError ? 'none' : 'block'
-              }}
-            />
-            
-            <StarIconButton
-              size="small"
-              aria-label="toggle favorite"
-              disabled={model.loading}
-              onClick={handleFavoriteToggle}
-              sx={{ zIndex: 2 }}
-              favorite={favorite}
-            >
-              {favorite ? <StarIcon /> : <StarBorderIcon />}
-            </StarIconButton>
-            
-            <PlatformBadge sx={{ zIndex: 2 }}>
-              <Tooltip title="Hugging Face">
-                <StorageIcon sx={{ fontSize: 20 }} />
-              </Tooltip>
-            </PlatformBadge>
-            
-            {isPopular && !model.loading && (
-              <Chip
-                label="Popular"
-                size="small"
-                color="primary"
-                sx={{
-                  position: 'absolute',
-                  bottom: 8,
-                  right: 8,
-                  backgroundColor: 'rgba(24, 68, 92, 0.85)',
-                  fontWeight: 'bold',
-                  zIndex: 2
-                }}
-              />
-            )}
-            
-            {/* Zoom button - only show if not loading */}
-            {!model.loading && (
-              <ZoomButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleOpenModal(e);
-                }}
-                aria-label="zoom image"
-                sx={{ zIndex: 2 }}
-              >
-                <ZoomInIcon fontSize="small" />
-              </ZoomButton>
-            )}
-          </StyledCardMediaContainer>
-        </Box>
-        
-        <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-          <Typography variant="h6" component="h2" gutterBottom noWrap title={model.name}>
-            {model.name}
-          </Typography>
-          
-          <Typography 
-            variant="body2" 
-            color="text.secondary" 
+    <StyledCard>
+      <Typography 
+        variant="h6" 
+        component="h2" 
+        sx={{ 
+          color: '#1976d2',
+          fontWeight: 'medium',
+          mb: 1
+        }}
+      >
+        {model.name}
+      </Typography>
+      
+      <Typography 
+        variant="body2" 
+        color="text.secondary" 
+        sx={{ 
+          mb: 2,
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 3,
+          WebkitBoxOrient: 'vertical',
+          textOverflow: 'ellipsis',
+          lineHeight: 1.4,
+          minHeight: '4.2em',
+          height: 'auto'
+        }}
+        title={model.description}
+      >
+        {model.description || 'No description available'}
+      </Typography>
+      
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
+        {model.tags && model.tags.slice(0, 3).map((tag, index) => (
+          <Chip 
+            key={index} 
+            label={tag} 
+            size="small" 
             sx={{ 
-              mb: 2,
-              overflow: 'hidden',
-              display: '-webkit-box',
-              WebkitLineClamp: 3,
-              WebkitBoxOrient: 'vertical',
-              textOverflow: 'ellipsis',
-              lineHeight: 1.4,
-              minHeight: '4.2em',
-              height: 'auto'
-            }}
-            title={model.description}
+              backgroundColor: '#edf2f7',
+              height: 24,
+              fontSize: '0.7rem'
+            }} 
+          />
+        ))}
+      </Box>
+      
+      <Box sx={{ mt: 'auto', display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+        {!model.loading && model.demoUrl && (
+          <Button 
+            variant="outlined" 
+            size="small"
+            startIcon={<PlayArrowIcon />}
+            component="a"
+            href={model.demoUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ minWidth: 'auto', fontSize: '0.7rem', p: '3px 8px' }}
           >
-            {model.description || 'No description available'}
-          </Typography>
-          
-          <Box sx={{ display: 'flex', mb: 1 }}>
-            <Tooltip title="Downloads">
-              <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
-                <DownloadIcon fontSize="small" sx={{ mr: 0.5, color: 'text.secondary' }} />
-                <Typography variant="body2" color="text.secondary">
-                  {formatNumber(model.downloads)}
-                </Typography>
-              </Box>
-            </Tooltip>
-            
-            <Tooltip title="Likes">
-              <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <Typography variant="body2" color="text.secondary">
-                  ❤️ {formatNumber(model.likes)}
-                </Typography>
-              </Box>
-            </Tooltip>
-          </Box>
-          
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 2 }}>
-            {model.tags && model.tags.slice(0, 3).map((tag, index) => (
-              <Chip 
-                key={index} 
-                label={tag} 
-                size="small" 
-                sx={{ 
-                  backgroundColor: '#edf2f7',
-                  height: 24,
-                  fontSize: '0.7rem'
-                }} 
-              />
-            ))}
-            {model.tags && model.tags.length > 3 && (
-              <Chip 
-                label={`+${model.tags.length - 3}`} 
-                size="small" 
-                sx={{ 
-                  backgroundColor: '#edf2f7',
-                  height: 24,
-                  fontSize: '0.7rem'
-                }} 
-              />
-            )}
-          </Box>
-          
-          <Box sx={{ mt: 'auto', display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-            {!model.loading && model.demoUrl && (
-              <Button 
-                variant="outlined" 
-                size="small"
-                startIcon={<PlayArrowIcon />}
-                component="a"
-                href={model.demoUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ minWidth: 'auto', fontSize: '0.7rem', p: '3px 8px' }}
-              >
-                Demo
-              </Button>
-            )}
-            
-            {!model.loading && model.apiUrl && (
-              <Button 
-                variant="outlined" 
-                size="small"
-                startIcon={<CodeIcon />}
-                component="a"
-                href={`${model.sourceUrl}#inference-api`}
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ minWidth: 'auto', fontSize: '0.7rem', p: '3px 8px' }}
-              >
-                API
-              </Button>
-            )}
-            
-            {!model.loading && model.downloadUrl && (
-              <Button 
-                variant="outlined" 
-                size="small"
-                startIcon={<DownloadIcon />}
-                component="a"
-                href={model.downloadUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                sx={{ minWidth: 'auto', fontSize: '0.7rem', p: '3px 8px' }}
-              >
-                Files
-              </Button>
-            )}
-            
-            <Button 
-              variant="contained" 
-              size="small"
-              component={Link}
-              to={`/model/${model.id}`}
-              color="primary"
-              onClick={handleModelDetails}
-              sx={{ ml: 'auto', fontSize: '0.7rem', p: '3px 8px' }}
-            >
-              Details
-            </Button>
-            
-            {/* Add Compare button if enabled */}
-            {model.compareEnabled && (
-              <Button 
-                variant={inComparison ? "contained" : "outlined"}
-                size="small"
-                color={inComparison ? "secondary" : "primary"}
-                startIcon={<CompareArrowsIcon />}
-                onClick={handleCompareClick}
-                sx={{ fontSize: '0.7rem', p: '3px 8px' }}
-              >
-                {inComparison ? 'Remove' : 'Compare'}
-              </Button>
-            )}
-          </Box>
-        </CardContent>
-      </StyledCard>
+            Demo
+          </Button>
+        )}
+        
+        {!model.loading && model.apiUrl && (
+          <Button 
+            variant="outlined" 
+            size="small"
+            startIcon={<CodeIcon />}
+            component="a"
+            href={`${model.sourceUrl}#inference-api`}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ minWidth: 'auto', fontSize: '0.7rem', p: '3px 8px' }}
+          >
+            API
+          </Button>
+        )}
+        
+        {!model.loading && model.downloadUrl && (
+          <Button 
+            variant="outlined" 
+            size="small"
+            startIcon={<DownloadIcon />}
+            component="a"
+            href={model.downloadUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ minWidth: 'auto', fontSize: '0.7rem', p: '3px 8px' }}
+          >
+            Files
+          </Button>
+        )}
+        
+        <Button 
+          variant="contained" 
+          size="small"
+          component={Link}
+          to={`/model/${model.id}`}
+          color="primary"
+          onClick={handleModelDetails}
+          sx={{ ml: 'auto', fontSize: '0.7rem', p: '3px 8px' }}
+        >
+          Details
+        </Button>
+        
+        {/* Add Compare button if enabled */}
+        {model.compareEnabled && (
+          <Button 
+            variant={inComparison ? "contained" : "outlined"}
+            size="small"
+            color={inComparison ? "secondary" : "primary"}
+            startIcon={<CompareArrowsIcon />}
+            onClick={handleCompareClick}
+            sx={{ fontSize: '0.7rem', p: '3px 8px' }}
+          >
+            {inComparison ? 'Remove' : 'Compare'}
+          </Button>
+        )}
+      </Box>
       
       {/* Modal for displaying full image and details */}
       <Modal
@@ -764,7 +606,6 @@ const ModelCard = ({ model }) => {
                   src={getImageUrl()}
                   alt={model.name}
                   onError={() => setImgError(true)}
-                  style={{ transform: `scale(${zoomFactor})` }}
                 />
               )}
             </Box>
@@ -863,18 +704,22 @@ const ModelCard = ({ model }) => {
         </Fade>
       </Modal>
       
-      {/* Notification Snackbar */}
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={3000}
+      {/* Notification snackbar */}
+      <Snackbar 
+        open={notification.open} 
+        autoHideDuration={3000} 
         onClose={handleCloseNotification}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseNotification} severity={notification.severity}>
+        <Alert 
+          onClose={handleCloseNotification} 
+          severity={notification.severity} 
+          sx={{ width: '100%' }}
+        >
           {notification.message}
         </Alert>
       </Snackbar>
-    </>
+    </StyledCard>
   );
 };
 

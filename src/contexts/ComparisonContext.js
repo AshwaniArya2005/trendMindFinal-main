@@ -37,28 +37,49 @@ export const ComparisonProvider = ({ children }) => {
   
   // Add a model to comparison
   const addModelToComparison = (model) => {
-    // Check if model is already in comparison
-    if (comparisonModels.some(m => m.id === model.id)) {
-      return { success: false, message: 'Model already added to comparison' };
+    try {
+      // Validate input
+      if (!model || !model.id) {
+        console.warn('Invalid model provided to comparison');
+        return { success: false, message: 'Invalid model data' };
+      }
+      
+      // Check if model is already in comparison
+      if (comparisonModels.some(m => m.id === model.id)) {
+        return { success: false, message: 'Model already added to comparison' };
+      }
+      
+      // Check if maximum models reached
+      if (comparisonModels.length >= MAX_COMPARISON_MODELS) {
+        return { 
+          success: false, 
+          message: `You can compare a maximum of ${MAX_COMPARISON_MODELS} models. Remove one to add another.` 
+        };
+      }
+      
+      // Add model to comparison
+      setComparisonModels([...comparisonModels, model]);
+      return { success: true, message: 'Model added to comparison' };
+    } catch (error) {
+      console.error('Error adding model to comparison:', error);
+      return { success: false, message: 'Failed to add model to comparison' };
     }
-    
-    // Check if maximum models reached
-    if (comparisonModels.length >= MAX_COMPARISON_MODELS) {
-      return { 
-        success: false, 
-        message: `You can compare a maximum of ${MAX_COMPARISON_MODELS} models. Remove one to add another.` 
-      };
-    }
-    
-    // Add model to comparison
-    setComparisonModels([...comparisonModels, model]);
-    return { success: true, message: 'Model added to comparison' };
   };
   
   // Remove a model from comparison
   const removeModelFromComparison = (modelId) => {
-    setComparisonModels(comparisonModels.filter(model => model.id !== modelId));
-    return { success: true, message: 'Model removed from comparison' };
+    try {
+      if (!modelId && modelId !== 0) {
+        console.warn('Invalid model ID provided for removal');
+        return { success: false, message: 'Invalid model ID' };
+      }
+      
+      setComparisonModels(comparisonModels.filter(model => model.id !== modelId));
+      return { success: true, message: 'Model removed from comparison' };
+    } catch (error) {
+      console.error('Error removing model from comparison:', error);
+      return { success: false, message: 'Failed to remove model from comparison' };
+    }
   };
   
   // Clear all models from comparison
