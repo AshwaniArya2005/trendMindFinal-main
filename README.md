@@ -34,11 +34,5 @@ npm start
 
 http://localhost:3000
 
-## 📁 Project Structure
-src/
-├── components/    # Reusable UI components (ModelCard, AIModelBlog, etc.)
-├── pages/         # Main application pages (Home, Compare, Profile, etc.)
-└── utils/         # Utility functions and helpers
-
 
 
