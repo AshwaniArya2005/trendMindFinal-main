@@ -2,6 +2,15 @@
 
 **TrendMind** is a web application that helps users discover, compare, and download trending AI models across domains like NLP and computer vision. The platform offers personalized onboarding, detailed model insights, and side-by-side performance metric comparisons.
 
+## Screenshots
+<img width="1919" height="952" alt="image" src="https://github.com/user-attachments/assets/0a4bb49f-be0c-49d2-b5d3-8e47d49c5922" />
+<img width="1919" height="951" alt="image" src="https://github.com/user-attachments/assets/381a4b50-b6d7-4bc1-83f0-8dff6c495556" />
+<img width="1919" height="953" alt="image" src="https://github.com/user-attachments/assets/337c9ed1-39e0-4e2b-9a1a-860ada0ca5d3" />
+<img width="1919" height="951" alt="image" src="https://github.com/user-attachments/assets/454e9cbc-bafd-4ab6-ad8a-98ed0d5bbd35" />
+
+
+
+
 ## 🚀 Features
 
 - **Model Discovery**: Browse trending and recommended AI models.
